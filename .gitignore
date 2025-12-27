@@ -1,0 +1,20 @@
+# Node
+node_modules/
+dist/
+
+# Env
+.env
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Baileys
+backend/auth_info/
+backend/data/
+
+# Build frontend
+frontend/dist/
