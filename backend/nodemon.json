@@ -1,0 +1,7 @@
+{
+  "watch": ["src"],
+  "ext": "ts",
+  "ignore": ["../frontend/**", "auth_info/**", "data/**", "dist/**", "node_modules/**"],
+  "exec": "node -r dotenv/config dist/server.js",
+  "delay": 250
+}
