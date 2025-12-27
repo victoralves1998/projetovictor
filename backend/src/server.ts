@@ -1,25 +1,13 @@
 import http from "http";
-import { createApp } from "./app";
+import app from "./app";
 import { config } from "./config";
 import { wsService } from "./services/ws.service";
-import { logService } from "./services/log.service";
+import { log } from "./services/log.service";
 
-async function main() {
-  const app = createApp();
-  const server = http.createServer(app);
+const server = http.createServer(app);
 
-  wsService.init(server);
+wsService.attach(server);
 
-  server.listen(config.port, () => {
-    const item = logService.push(
-      "info",
-      `FluxZap Backend running on http://localhost:${config.port} (WS: /ws)`
-    );
-    console.log(item.msg);
-  });
-}
-
-main().catch((err) => {
-  console.error("Fatal:", err);
-  process.exit(1);
+server.listen(config.port, () => {
+  log.info(`FluxZap Backend running on http://localhost:${config.port} (WS: /ws)`);
 });

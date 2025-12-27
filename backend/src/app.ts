@@ -1,25 +1,23 @@
 import express from "express";
 import cors from "cors";
 import { config } from "./config";
-import { apiRoutes } from "./routes";
+import { botsRoutes } from "./routes/bots.routes";
 
-export function createApp() {
-  const app = express();
+const app = express();
 
-  app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "2mb" }));
 
-  app.use(
-    cors({
-      origin: config.corsOrigin,
-      credentials: true
-    })
-  );
+app.use(
+  cors({
+    origin: config.corsOrigin,
+    credentials: true
+  })
+);
 
-  app.get("/", (_req, res) => {
-    res.json({ name: "FluxZap API", version: "1.0.0", status: "ok" });
-  });
+app.get("/", (_req, res) => {
+  res.json({ name: "FluxZap API", version: "1.0.0", status: "ok" });
+});
 
-  app.use("/api", apiRoutes);
+app.use("/api/bots", botsRoutes);
 
-  return app;
-}
+export default app;

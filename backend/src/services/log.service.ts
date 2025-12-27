@@ -1,31 +1,37 @@
 export type LogLevel = "info" | "warn" | "error";
 
 export type LogItem = {
-  ts: string;
+  ts: string; // ISO
   level: LogLevel;
   msg: string;
-  meta?: Record<string, unknown>;
 };
 
-const MAX_LOGS = 50;
-
 class LogService {
-  private logs: LogItem[] = [];
+  private last: LogItem[] = [];
 
-  push(level: LogLevel, msg: string, meta?: Record<string, unknown>) {
-    const item: LogItem = { ts: new Date().toISOString(), level, msg, meta };
-    this.logs.push(item);
-    if (this.logs.length > MAX_LOGS) this.logs.shift();
-    return item;
+  private push(level: LogLevel, msg: string) {
+    const item: LogItem = { ts: new Date().toISOString(), level, msg };
+    this.last.push(item);
+    if (this.last.length > 50) this.last = this.last.slice(this.last.length - 50);
+    // eslint-disable-next-line no-console
+    console[level === "error" ? "error" : level === "warn" ? "warn" : "log"](
+      `${new Date(item.ts).toLocaleTimeString()} [${level}] ${msg}`
+    );
   }
 
-  list() {
-    return [...this.logs];
+  info(msg: string) {
+    this.push("info", msg);
+  }
+  warn(msg: string) {
+    this.push("warn", msg);
+  }
+  error(msg: string) {
+    this.push("error", msg);
   }
 
-  clear() {
-    this.logs = [];
+  getLastLogs() {
+    return [...this.last];
   }
 }
 
-export const logService = new LogService();
+export const log = new LogService();

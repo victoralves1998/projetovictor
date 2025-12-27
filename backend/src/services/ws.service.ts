@@ -1,46 +1,45 @@
-import type { Server as HttpServer } from "http";
-import WebSocket, { WebSocketServer } from "ws";
-import { logService, type LogItem } from "./log.service";
+import type http from "http";
+import { WebSocketServer, WebSocket } from "ws";
+import { log } from "./log.service";
+import { baileysService } from "./baileys.service";
 
-type WsMessage =
-  | { type: "hello"; payload: { ok: true; lastLogs: LogItem[] } }
-  | { type: "log"; payload: LogItem }
+type WsMsg =
+  | { type: "hello"; payload: { ok: true; lastLogs: any[] } }
+  | { type: "log"; payload: any }
   | { type: "status"; payload: any };
 
 class WsService {
   private wss: WebSocketServer | null = null;
   private clients = new Set<WebSocket>();
 
-  init(httpServer: HttpServer) {
-    this.wss = new WebSocketServer({ server: httpServer, path: "/ws" });
+  attach(server: http.Server) {
+    if (this.wss) return;
+
+    this.wss = new WebSocketServer({ server, path: "/ws" });
 
     this.wss.on("connection", (ws) => {
       this.clients.add(ws);
 
-      const hello: WsMessage = {
+      const hello: WsMsg = {
         type: "hello",
-        payload: { ok: true, lastLogs: logService.list() }
+        payload: { ok: true, lastLogs: log.getLastLogs() }
       };
       ws.send(JSON.stringify(hello));
+
+      // manda status atual do bot ao conectar
+      const st: WsMsg = { type: "status", payload: baileysService.getStatus() };
+      ws.send(JSON.stringify(st));
 
       ws.on("close", () => this.clients.delete(ws));
       ws.on("error", () => this.clients.delete(ws));
     });
   }
 
-  broadcast(message: WsMessage) {
-    const data = JSON.stringify(message);
+  broadcast(msg: WsMsg) {
+    const data = JSON.stringify(msg);
     for (const ws of this.clients) {
       if (ws.readyState === WebSocket.OPEN) ws.send(data);
     }
-  }
-
-  broadcastLog(item: LogItem) {
-    this.broadcast({ type: "log", payload: item });
-  }
-
-  broadcastStatus(payload: any) {
-    this.broadcast({ type: "status", payload });
   }
 }
 
